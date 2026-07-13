@@ -1,34 +1,33 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
+
+from app.schemas.task import TaskCreate
 
 router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"]
 )
 
-
 @router.get("/")
 def get_all_tasks():
     return {
-        "message": "Get all tasks"
+        "Msg": "Get All Tasks"
     }
 
-
-@router.post("/")
-def create_task():
+@router.post("/",status_code=status.HTTP_201_CREATED)
+def create_task(task: TaskCreate):
     return {
-        "message": "Create a task"
+        "message": "A new task created successfully",
+        "task": task
     }
 
-
-@router.get("/papa")
-def get_all_tasks():
+@router.get("/count")
+def get_task_count():
     return {
-        "Yo": "Imma Hustler"
+        "count": 0
     }
 
-
-@router.post("/mama")
-def create_task():
+@router.get("/health")
+def health():
     return {
-        "message": "Imma Nurturer"
+        "status": "Healthy"
     }
