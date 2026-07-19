@@ -1,22 +1,23 @@
 from fastapi import FastAPI
-
 from app.api.tasks import router as task_router
+from app.core.config import settings
 
 app = FastAPI(
-    title="Task Management API",
-    version="1.0.0"
+    title=settings.app_name,
+    version=settings.app_version
 )
 
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to the Task Management API!"
+        "message": f"Welcome to the {settings.app_name}!"
     }
 
-@app.post("/")
+@app.get("/debug")
 def root():
     return {
-        "msg": "Welcome to testing Post req on tmAPI!"
+        "papad": f"Papad ka size hai: {settings.papad}!",
+        "debug": settings.debug
     }
 
 app.include_router(task_router)
