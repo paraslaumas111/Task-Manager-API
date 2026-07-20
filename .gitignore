@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .env
 .vscode/
+Practice.py
+countries.csv.xlsx
+PASSENGERS.dat

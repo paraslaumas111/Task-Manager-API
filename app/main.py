@@ -16,7 +16,7 @@ def root():
 @app.get("/debug")
 def root():
     return {
-        "papad": f"Papad ka size hai: {settings.papad}!",
+        "ENVIRONMENT": f"The working environment is: {settings.environment}!",
         "debug": settings.debug
     }
 

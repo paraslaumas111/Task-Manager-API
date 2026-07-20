@@ -5,7 +5,8 @@ class Settings(BaseSettings):
     app_name: str = "Task Management API"
     app_version: str = "1.0.0"
     debug: bool = True
-    papad: int = 75
+    environment: str = "development"
+    database_url: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
