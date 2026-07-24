@@ -26,3 +26,8 @@ class User(Base):
         String(255),
         nullable=False
     )
+
+    bio: Mapped[str | None] = mapped_column(
+    String(500),
+    nullable=True
+    )
