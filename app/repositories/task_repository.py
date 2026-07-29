@@ -1,29 +1,87 @@
-from app.schemas.task import TaskCreate
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-# Temporary in-memory storage
-tasks = []
+from app.models.task import Task
+from app.schemas.task import TaskCreate, TaskUpdate
 
-def get_all_tasks():
-    return tasks
+def create_task(
+    db: Session,
+    task_data: TaskCreate,
+    owner_id: int
+) -> Task:
 
-def get_task_by_id(Id: int):
-    for i in tasks:
-        if i["id"] == Id:
-            return i
-    return None
+    task = Task(
+        title=task_data.title,
+        description=task_data.description,
+        priority=task_data.priority.value,
+        status=task_data.status.value,
+        due_date=task_data.due_date,
+        completed=task_data.completed,
+        owner_id=owner_id
+    )
 
-def create_task(task: TaskCreate):
+    db.add(task)
 
-    task_data = {
-        "id": len(tasks) + 1,
-        "title": task.title,
-        "description": task.description,
-        "priority": task.priority,
-        "pilu": task.pilu,
-        "due_date": task.due_date,
-        "completed": task.completed
-    }
+    db.commit()
 
-    tasks.append(task_data)
+    db.refresh(task)
 
-    return task_data
+    return task
+
+def get_all_tasks(
+    db: Session,
+    owner_id: int
+) -> list[Task]:
+
+    statement = select(Task).where(Task.owner_id == owner_id)
+
+    result = db.execute(statement)
+
+    return list(result.scalars().all())
+
+def get_task_by_id(
+    db: Session,
+    task_id: int,
+    owner_id: int
+) -> Task | None:
+
+    statement = select(Task).where(
+        Task.id == task_id,
+        Task.owner_id == owner_id
+    )
+
+    result = db.execute(statement)
+
+    return result.scalar_one_or_none()
+
+def update_task(
+    db: Session,
+    task: Task,
+    task_data: TaskUpdate
+) -> Task:
+
+    update_data = task_data.model_dump(
+        exclude_unset=True
+    )
+
+    for field, value in update_data.items():
+
+        if hasattr(value, "value"):
+            value = value.value
+
+        setattr(task, field, value)
+
+    db.commit()
+
+    db.refresh(task)
+
+    return task
+
+def delete_task(
+    db: Session,
+    task: Task
+) -> None:
+
+    db.delete(task)
+
+    db.commit()

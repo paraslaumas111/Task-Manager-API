@@ -49,7 +49,3 @@ class Task(Base):
         ForeignKey("users.id"),
         nullable=False
     )
-
-    estimated_minutes: Mapped[int | None] = mapped_column(
-    nullable=True
-    )

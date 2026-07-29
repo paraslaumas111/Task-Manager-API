@@ -1,6 +1,6 @@
 from datetime import date
-from typing import Optional
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -11,36 +11,55 @@ class Priority(str, Enum):
     HIGH = "HIGH"
 
 
-class Pilu(str, Enum):
-    kela = "23"
-    ers = "84"
-    HIGH = "50"
+class Status(str, Enum):
+    TODO = "TODO"
+    IN_PROGRESS = "IN_PROGRESS"
+    DONE = "DONE"
+
 
 class TaskCreate(BaseModel):
     title: str = Field(
         ...,
-        min_length=3,
-        max_length=100,
-        description="Task title"
+        min_length=5,
+        max_length=150
     )
 
     description: str = Field(
         ...,
         min_length=5,
-        max_length=500,
-        description="Task description"
+        max_length=500
     )
 
     priority: Priority
 
-    pilu: Pilu
+    status: Status = Status.TODO
 
     due_date: date
 
     completed: bool = False
 
-    notes: Optional[str] = Field(...,
-                                 max_length=10)
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = Field(
+        default=None,
+        min_length=5,
+        max_length=150
+    )
+
+    description: Optional[str] = Field(
+        default=None,
+        min_length=5,
+        max_length=500
+    )
+
+    priority: Optional[Priority] = None
+
+    status: Optional[Status] = None
+
+    due_date: Optional[date] = None
+
+    completed: Optional[bool] = None
+
 
 class TaskResponse(BaseModel):
     id: int
@@ -51,8 +70,14 @@ class TaskResponse(BaseModel):
 
     priority: Priority
 
-    pilu: Pilu
+    status: Status
 
     due_date: date
 
     completed: bool
+
+    owner_id: int
+
+    model_config = {
+        "from_attributes": True
+    }

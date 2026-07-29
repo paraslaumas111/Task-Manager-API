@@ -1,14 +1,83 @@
-from app.schemas.task import TaskCreate
-from app.repositories.task_repository import create_task, get_all_tasks, get_task_by_id
+from sqlalchemy.orm import Session
 
-def list_tasks():
-    return get_all_tasks()
+from app.repositories.task_repository import (
+    create_task,
+    delete_task,
+    get_all_tasks,
+    get_task_by_id,
+    update_task
+)
+from app.schemas.task import TaskCreate, TaskUpdate
 
-def find_task(ID: int):
-    return get_task_by_id(ID)
+def create_new_task(
+    db: Session,
+    task_data: TaskCreate,
+    owner_id: int
+):
+    return create_task(
+        db=db,
+        task_data=task_data,
+        owner_id=owner_id
+    )
 
-def create_new_task(task: TaskCreate):
+def list_tasks(
+    db: Session,
+    owner_id: int
+):
+    return get_all_tasks(
+        db=db,
+        owner_id=owner_id
+    )
 
-    # Business rules go here
+def find_task(
+    db: Session,
+    task_id: int,
+    owner_id: int
+):
+    return get_task_by_id(
+        db=db,
+        task_id=task_id,
+        owner_id=owner_id
+    )
 
-    return create_task(task)
+def edit_task(
+    db: Session,
+    task_id: int,
+    task_data: TaskUpdate,
+    owner_id: int
+):
+    task = get_task_by_id(
+        db=db,
+        task_id=task_id,
+        owner_id=owner_id
+    )
+
+    if task is None:
+        return None
+
+    return update_task(
+        db=db,
+        task=task,
+        task_data=task_data
+    )
+
+def remove_task(
+    db: Session,
+    task_id: int,
+    owner_id: int
+):
+    task = get_task_by_id(
+        db=db,
+        task_id=task_id,
+        owner_id=owner_id
+    )
+
+    if task is None:
+        return None
+
+    delete_task(
+        db=db,
+        task=task
+    )
+
+    return True
