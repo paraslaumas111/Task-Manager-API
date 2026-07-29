@@ -8,10 +8,12 @@ from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.schemas.user import (
+    TokenResponse,
     UserCreate,
     UserResponse
 )
 from app.services.auth_service import (
+    login_user,
     register_user
 )
 
@@ -20,6 +22,7 @@ router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
+
 
 @router.post(
     "/register",
@@ -43,3 +46,31 @@ def register(
         )
 
     return user
+
+
+@router.post(
+    "/login",
+    response_model=TokenResponse
+)
+def login(
+    email: str,
+    password: str,
+    db: Session = Depends(get_db)
+):
+
+    access_token = login_user(
+        db=db,
+        email=email,
+        password=password
+    )
+
+    if access_token is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password"
+        )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
