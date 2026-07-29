@@ -3,8 +3,10 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.tasks import router as task_router
+from app.api.auth import router as auth_router  
 from app.core.config import settings
 from app.database.session import get_db
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -36,3 +38,4 @@ def test_database(db: Session = Depends(get_db)):
     }
 
 app.include_router(task_router)
+app.include_router(auth_router)
