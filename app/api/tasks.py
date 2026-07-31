@@ -12,6 +12,11 @@ from app.services.task_service import (
     list_tasks,
     remove_task
 )
+from app.core.cache import (
+    delete_user_task_cache,
+    get_cache,
+    set_cache
+)
 
 
 router = APIRouter(
@@ -25,7 +30,7 @@ router = APIRouter(
     response_model=list[TaskResponse]
 )
 def get_all_tasks(
-    page: int = 1,
+     page: int = 1,
     size: int = 10,
     db: Session = Depends(get_db),
     current_user: User = Depends(
@@ -33,12 +38,32 @@ def get_all_tasks(
     )
 ):
 
-    return list_tasks(
+    cache_key = (
+        f"tasks:{current_user.id}:"
+        f"{page}:{size}"
+    )
+
+    cached_tasks = get_cache(
+        cache_key
+    )
+
+    if cached_tasks is not None:
+        return cached_tasks
+
+    tasks = list_tasks(
         db=db,
         owner_id=current_user.id,
         page=page,
         size=size
     )
+
+    set_cache(
+        key=cache_key,
+        value=tasks,
+        ttl=60
+    )
+
+    return tasks
 
 @router.get(
     "/{task_id}",
@@ -72,11 +97,17 @@ def create_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return create_new_task(
+    task = create_new_task(
         db=db,
         task_data=task_data,
         owner_id=current_user.id
     )
+
+    delete_user_task_cache(
+        current_user.id
+    )
+
+    return task
 
 
 @router.put(
@@ -100,6 +131,9 @@ def update_task(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Couldn't find a task with this id"
         )
+    delete_user_task_cache(
+        current_user.id
+    )
     return task
 
 
@@ -123,3 +157,6 @@ def delete_task(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Couldn't delete since couldn't find this id in the database"
         )
+    delete_user_task_cache(
+        current_user.id
+    )
