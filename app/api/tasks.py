@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate
+from app.models.user import User
+from app.services.current_user import get_current_user
 from app.services.task_service import (
     create_new_task,
     edit_task,
@@ -17,20 +19,26 @@ router = APIRouter(
     tags=["Tasks"]
 )
 
-TEMPORARY_OWNER_ID = 1
 
 @router.get(
     "/",
     response_model=list[TaskResponse]
 )
 def get_all_tasks(
-    db: Session = Depends(get_db)
+    page: int = 1,
+    size: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    )
 ):
+
     return list_tasks(
         db=db,
-        owner_id=TEMPORARY_OWNER_ID
+        owner_id=current_user.id,
+        page=page,
+        size=size
     )
-
 
 @router.get(
     "/{task_id}",
@@ -38,12 +46,13 @@ def get_all_tasks(
 )
 def get_task(
     task_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     task = find_task(
         db=db,
         task_id=task_id,
-        owner_id=TEMPORARY_OWNER_ID
+        owner_id=current_user.id
     )
     if task is None:
         raise HTTPException(
@@ -60,12 +69,13 @@ def get_task(
 )
 def create_task(
     task_data: TaskCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     return create_new_task(
         db=db,
         task_data=task_data,
-        owner_id=TEMPORARY_OWNER_ID
+        owner_id=current_user.id
     )
 
 
@@ -76,13 +86,14 @@ def create_task(
 def update_task(
     task_id: int,
     task_data: TaskUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     task = edit_task(
         db=db,
         task_id=task_id,
         task_data=task_data,
-        owner_id=TEMPORARY_OWNER_ID
+        owner_id=current_user.id
     )
     if task is None:
         raise HTTPException(
@@ -98,12 +109,13 @@ def update_task(
 )
 def delete_task(
     task_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     delete = remove_task(
         db=db,
         task_id=task_id,
-        owner_id=TEMPORARY_OWNER_ID
+        owner_id=current_user.id
     )
 
     if not delete:

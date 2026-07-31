@@ -30,14 +30,23 @@ def create_task(
 
 def get_all_tasks(
     db: Session,
-    owner_id: int
-) -> list[Task]:
+    owner_id: int,
+    offset: int = 0,
+    limit: int = 10
+):
 
-    statement = select(Task).where(Task.owner_id == owner_id)
+    statement = (
+        select(Task)
+        .where(
+            Task.owner_id == owner_id
+        )
+        .offset(offset)
+        .limit(limit)
+    )
 
     result = db.execute(statement)
 
-    return list(result.scalars().all())
+    return result.scalars().all()
 
 def get_task_by_id(
     db: Session,

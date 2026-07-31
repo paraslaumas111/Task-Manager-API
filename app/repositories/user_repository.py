@@ -36,3 +36,17 @@ def create_user(
     db.refresh(user)
 
     return user
+
+
+def get_user_by_id(
+    db: Session,
+    user_id: int
+) -> User | None:
+
+    statement = select(User).where(
+        User.id == user_id
+    )
+
+    result = db.execute(statement)
+
+    return result.scalar_one_or_none()

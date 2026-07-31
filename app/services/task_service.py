@@ -22,11 +22,18 @@ def create_new_task(
 
 def list_tasks(
     db: Session,
-    owner_id: int
+    owner_id: int,
+    page: int = 1,
+    size: int = 10
 ):
+
+    offset = (page - 1) * size
+
     return get_all_tasks(
         db=db,
-        owner_id=owner_id
+        owner_id=owner_id,
+        offset=offset,
+        limit=size
     )
 
 def find_task(

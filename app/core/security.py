@@ -1,6 +1,8 @@
+import jwt
+
+from jwt import InvalidTokenError
 from pwdlib import PasswordHash
 from datetime import datetime, timedelta, timezone
-import jwt
 
 from app.core.config import settings
 
@@ -35,4 +37,14 @@ def create_access_token(
         payload,
         settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm
+    )
+
+def verify_access_token(
+    token: str
+) -> dict:
+
+    return jwt.decode(
+        token,
+        settings.jwt_secret_key,
+        algorithms=[settings.jwt_algorithm]
     )

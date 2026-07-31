@@ -4,6 +4,7 @@ from fastapi import (
     HTTPException,
     status
 )
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
@@ -53,21 +54,23 @@ def register(
     response_model=TokenResponse
 )
 def login(
-    email: str,
-    password: str,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
 
     access_token = login_user(
         db=db,
-        email=email,
-        password=password
+        email=form_data.username,
+        password=form_data.password
     )
 
     if access_token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Incorrect email or password",
+            headers={
+                "WWW-Authenticate": "Bearer"
+            }
         )
 
     return {
